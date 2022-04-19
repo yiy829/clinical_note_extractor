@@ -39,7 +39,7 @@ class PreprocessHandler():
                                                                 rand_num)
                 verify_data = db_connection.fn_select_query(p_str_sql_query=confirm_query)
         except Exception as e:
-            print(e)
+            print("fn_randomize_num error", e)
 
         return rand_num
 
@@ -60,15 +60,21 @@ class PreprocessHandler():
 
             # 인종
             race_index = [i for i in range(len(p_split_list)) if "Race:" in p_split_list[i]]
-            race_value = p_split_list[race_index[0]].split("Race:")[1].replace(" ", "").lower()
+            race_value = None
+            if len(race_index) != 0:
+                race_value = p_split_list[race_index[0]].split("Race:")[1].replace(" ", "").lower()
 
             # 민족성
             ethnicity_index = [i for i in range(len(p_split_list)) if "Ethnicity:" in p_split_list[i]]
-            ethnicity_value = re.sub("[' '|\-]", "", p_split_list[ethnicity_index[0]].split("Ethnicity:")[1].lower())
+            ethnicity_value = None
+            if len(ethnicity_index) != 0:
+                ethnicity_value = re.sub("[' '|\-]", "", p_split_list[ethnicity_index[0]].split("Ethnicity:")[1].lower())
 
             # 성별
             gender_index = [i for i in range(len(p_split_list)) if "Gender:" in p_split_list[i]]
-            gender_value = p_split_list[gender_index[0]].split("Gender:")[1].replace(" ", "")
+            gender_value = None
+            if len(gender_index) != 0:
+                gender_value = p_split_list[gender_index[0]].split("Gender:")[1].replace(" ", "")
 
             # # 나이
             # age_index = [i for i in range(len(split_list)) if "Age:" in split_list[i]]
@@ -76,10 +82,16 @@ class PreprocessHandler():
 
             # 생년월일
             birth_index = [i for i in range(len(p_split_list)) if "Birth Date:" in p_split_list[i]]
-            birth = p_split_list[birth_index[0]].split("Birth Date:")[1].replace(" ", "")
-            year_of_birth = int(birth.split("-")[0])
-            month_of_birth = int(birth.split("-")[1])
-            day_of_birth = int(birth.split("-")[2])
+            birth = None
+            year_of_birth = None
+            month_of_birth = None
+            day_of_birth = None
+
+            if len(birth_index) != 0:
+                birth = p_split_list[birth_index[0]].split("Birth Date:")[1].replace(" ", "")
+                year_of_birth = int(birth.split("-")[0])
+                month_of_birth = int(birth.split("-")[1])
+                day_of_birth = int(birth.split("-")[2])
 
             # 사망날짜
             death_index = [i for i in range(len(p_split_list)) if "Death Date:" in p_split_list[i]]
@@ -98,7 +110,7 @@ class PreprocessHandler():
             df_person = df_person.append(input_dict, ignore_index=True)
 
         except Exception as e:
-            print(e)
+            print("fn_preprocess_person error", e)
 
         return df_person
 
@@ -114,7 +126,7 @@ class PreprocessHandler():
     '''
     def fn_preprocess_visit_occurrence(self, p_split_list):
         try:
-            visit_occurrence = pd.DataFrame(
+            df_visit_occurrence = pd.DataFrame(
                 columns=["visit_occurrence_id", "person_id", "visit_start_date", "care_site_nm", "visit_type_value"])
 
             encounter_index = [i + 1 for i in range(len(p_split_list)) if "ENCOUNTER" in p_split_list[i]]
@@ -130,10 +142,10 @@ class PreprocessHandler():
             input_dict = {'visit_start_date': visit_start_date
                 , 'care_site_nm': care_site_nm
                 , 'visit_type_value': visit_type_value}
-            df_visit_occurrence = visit_occurrence.append(input_dict, ignore_index=True)
+            df_visit_occurrence = df_visit_occurrence.append(input_dict, ignore_index=True)
 
         except Exception as e:
-            print(e)
+            print("fn_preprocess_visit_occurrence error", e)
 
         return df_visit_occurrence
 
@@ -147,32 +159,48 @@ class PreprocessHandler():
     '''
     def fn_preprocess_drug_exposure(self, p_split_list):
         try:
-            drug_exposure = pd.DataFrame(
+            df_drug_exposure = pd.DataFrame(
                 columns=["drug_exposure_id", "person_id", "drug_exposure_start_date", "drug_value", "route_value",
                          "dose_value", "unit_value", "visit_occurrence_id"])
             # drug_exposure
             drug_index = [i + 1 for i in range(len(p_split_list)) if "MEDICATIONS:" in p_split_list[i]]
+            print("drug_index : ", drug_index)
             drug_history = p_split_list[drug_index[0]].split(":")
+            print("drug_history : ", drug_history)
 
-            for i in range(0, len(drug_history), 2):
-                # 약처방일자
-                drug_exposure_start_date = drug_history[i].strip()
-                # 약 성분명
-                drug_value = drug_history[i + 1].strip().split(" ")[0]
-                # 약 용량 정보
-                dose_value = drug_history[i + 1].strip().split(" ")[1]
-                # 용량의 단위 정보
-                unit_value = drug_history[i + 1].strip().split(" ")[2]
-                # 약 복용경로
-                route_value = drug_history[i + 1].strip().split(" ")[3]
+            # drug_exposure 내역이 두개 이상일 경우 처리
+            if len(drug_history) > 2:
+                for i in range(0, len(drug_history), 2):
+                    # 약처방일자
+                    drug_exposure_start_date = drug_history[i].strip()
+                    # 약 성분명
+                    drug_value = drug_history[i + 1].strip().split(" ")[0]
+                    # 약 용량 정보
+                    dose_value = drug_history[i + 1].strip().split(" ")[1]
+                    # 용량의 단위 정보
+                    unit_value = drug_history[i + 1].strip().split(" ")[2]
+                    # 약 복용경로
+                    route_value = drug_history[i + 1].strip().split(" ")[3]
+            elif len(drug_history) == 1:
+                drug_exposure_start_date = None
+                drug_value = None
+                dose_value = None
+                unit_value = None
+                route_value = None
+            else:
+                drug_exposure_start_date = drug_history[0].strip()
+                drug_value = drug_history[1].strip().split(" ")[0]
+                dose_value = drug_history[1].strip().split(" ")[1]
+                unit_value = drug_history[1].strip().split(" ")[2]
+                route_value = drug_history[1].strip().split(" ")[3]
 
-                input_dict = {'drug_exposure_start_date': drug_exposure_start_date,
-                              'drug_value': drug_value, 'dose_value': dose_value,
-                              'unit_value': unit_value, 'route_value': route_value}
-                df_drug_exposure = drug_exposure.append(input_dict, ignore_index=True)
+            input_dict = {'drug_exposure_start_date': drug_exposure_start_date,
+                          'drug_value': drug_value, 'dose_value': dose_value,
+                          'unit_value': unit_value, 'route_value': route_value}
+            df_drug_exposure = df_drug_exposure.append(input_dict, ignore_index=True)
 
         except Exception as e:
-            print(e)
+            print("fn_preprocess_drug_exposure error", e)
 
         return df_drug_exposure
 
@@ -187,24 +215,34 @@ class PreprocessHandler():
     def fn_preprocess_condition_occurrence(self, p_split_list):
         try:
             condition_index = [i + 1 for i in range(len(p_split_list)) if "CONDITIONS" in p_split_list[i]]
+            print("condition_index : ", condition_index)
             condition_history = p_split_list[condition_index[0]].split(":")
+            print("condition_history : ", condition_history)
 
-            condition_occurrence = pd.DataFrame(
+            df_condition_occurrence = pd.DataFrame(
                 columns=["condition_occurrence_id", "person_id", "condition_start_date", "condition_value",
                          "visit_occurrence_id"])
-            condition_history
-            for i in range(0, len(condition_history), 2):
-                # 진단받은 일자
-                condition_start_date = condition_history[i].strip()
-                # 진단명 정보
-                condition_value = condition_history[i + 1].strip()
 
-                input_dict = {'condition_start_date': condition_start_date,
-                              'condition_value': condition_value}
-                df_condition_occurrence = condition_occurrence.append(input_dict, ignore_index=True)
+            # condition_occurrence 내역이 두개 이상일 경우 처리
+            if len(condition_history) > 2:
+                for i in range(0, len(condition_history), 2):
+                    # 진단받은 일자
+                    condition_start_date = condition_history[i].strip()
+                    # 진단명 정보
+                    condition_value = condition_history[i + 1].strip()
+            elif len(condition_history) == 1:
+                condition_start_date = None
+                condition_value = None
+            else:
+                condition_start_date = condition_history[0].strip()
+                condition_value = condition_history[1].strip()
+
+            input_dict = {'condition_start_date': condition_start_date,
+                          'condition_value': condition_value}
+            df_condition_occurrence = df_condition_occurrence.append(input_dict, ignore_index=True)
 
         except Exception as e:
-            print(e)
+            print("fn_preprocess_condition_occurrence error", e)
 
         return df_condition_occurrence
 
@@ -232,11 +270,12 @@ class PreprocessHandler():
                          "visit_occurrence_id"])
 
             clinical_data = load_data.LoadDataHandler().fn_load_origin_data()
+            print("clinical_data len : ", len(clinical_data))
 
             # 데이터 행별로 전처리
             for i in range(len(clinical_data)):
                 input_list = clinical_data['note'].loc[i].split("\n")
-
+                print("len(input_list) : ", len(input_list))
                 split_list = load_data.LoadDataHandler().fn_preprocess_origin_data(input_list)
                 person_row = PreprocessHandler().fn_preprocess_person(split_list)
                 visit_occurrence_row = PreprocessHandler().fn_preprocess_visit_occurrence(split_list)
@@ -274,8 +313,13 @@ class PreprocessHandler():
                 drug_exposure = drug_exposure.append(drug_exposure_row, ignore_index=True)
                 condition_occurrence = condition_occurrence.append(condition_occurrence_row, ignore_index=True)
 
+            print("len(person) : ", len(person))
+            print("len(visit_occurrence) : ", len(visit_occurrence))
+            print("len(drug_exposure) : ", len(drug_exposure))
+            print("len(condition_occurrence) : ", len(condition_occurrence))
+
         except Exception as e:
-            print(e)
+            print("fn_preprocess_main error", e)
 
         return person, visit_occurrence, drug_exposure, condition_occurrence
 
