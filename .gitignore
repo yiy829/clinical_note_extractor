@@ -1,0 +1,5 @@
+# config file
+*_config.py
+
+# test ipynb
+*.ipynb
