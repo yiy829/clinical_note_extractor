@@ -6,6 +6,7 @@ from Extractor import insert_data
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=UserWarning)
 
+
 # DB입력 메인 함수
 if __name__ == '__main__':
     insert_data.InsertDataHandler().fn_main_insert_data()
