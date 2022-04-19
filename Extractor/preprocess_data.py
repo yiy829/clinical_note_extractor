@@ -164,9 +164,9 @@ class PreprocessHandler():
                          "dose_value", "unit_value", "visit_occurrence_id"])
             # drug_exposure
             drug_index = [i + 1 for i in range(len(p_split_list)) if "MEDICATIONS:" in p_split_list[i]]
-            print("drug_index : ", drug_index)
+            # print("drug_index : ", drug_index)
             drug_history = p_split_list[drug_index[0]].split(":")
-            print("drug_history : ", drug_history)
+            # print("drug_history : ", drug_history)
 
             # drug_exposure 내역이 두개 이상일 경우 처리
             if len(drug_history) > 2:
@@ -215,9 +215,9 @@ class PreprocessHandler():
     def fn_preprocess_condition_occurrence(self, p_split_list):
         try:
             condition_index = [i + 1 for i in range(len(p_split_list)) if "CONDITIONS" in p_split_list[i]]
-            print("condition_index : ", condition_index)
+            # print("condition_index : ", condition_index)
             condition_history = p_split_list[condition_index[0]].split(":")
-            print("condition_history : ", condition_history)
+            # print("condition_history : ", condition_history)
 
             df_condition_occurrence = pd.DataFrame(
                 columns=["condition_occurrence_id", "person_id", "condition_start_date", "condition_value",
@@ -270,12 +270,12 @@ class PreprocessHandler():
                          "visit_occurrence_id"])
 
             clinical_data = load_data.LoadDataHandler().fn_load_origin_data()
-            print("clinical_data len : ", len(clinical_data))
+            # print("clinical_data len : ", len(clinical_data))
 
             # 데이터 행별로 전처리
             for i in range(len(clinical_data)):
                 input_list = clinical_data['note'].loc[i].split("\n")
-                print("len(input_list) : ", len(input_list))
+                # print("len(input_list) : ", len(input_list))
                 split_list = load_data.LoadDataHandler().fn_preprocess_origin_data(input_list)
                 person_row = PreprocessHandler().fn_preprocess_person(split_list)
                 visit_occurrence_row = PreprocessHandler().fn_preprocess_visit_occurrence(split_list)
@@ -313,10 +313,15 @@ class PreprocessHandler():
                 drug_exposure = drug_exposure.append(drug_exposure_row, ignore_index=True)
                 condition_occurrence = condition_occurrence.append(condition_occurrence_row, ignore_index=True)
 
-            print("len(person) : ", len(person))
-            print("len(visit_occurrence) : ", len(visit_occurrence))
-            print("len(drug_exposure) : ", len(drug_exposure))
-            print("len(condition_occurrence) : ", len(condition_occurrence))
+            # print("len(person) : ", len(person))
+            # print("len(visit_occurrence) : ", len(visit_occurrence))
+            # print("len(drug_exposure) : ", len(drug_exposure))
+            # print("len(condition_occurrence) : ", len(condition_occurrence))
+
+            # 등록 날짜기준으로 내역 자체가 없고 번호만 있을 경우, 삭제
+            visit_occurrence = visit_occurrence['visit_start_date'].dropna()
+            drug_exposure = drug_exposure['drug_exposure_start_date'].dropna()
+            condition_occurrence = condition_occurrence['condition_start_date'].dropna()
 
         except Exception as e:
             print("fn_preprocess_main error", e)
