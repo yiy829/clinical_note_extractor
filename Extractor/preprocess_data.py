@@ -319,9 +319,9 @@ class PreprocessHandler():
             # print("len(condition_occurrence) : ", len(condition_occurrence))
 
             # 등록 날짜기준으로 내역 자체가 없고 번호만 있을 경우, 삭제
-            visit_occurrence = visit_occurrence['visit_start_date'].dropna()
-            drug_exposure = drug_exposure['drug_exposure_start_date'].dropna()
-            condition_occurrence = condition_occurrence['condition_start_date'].dropna()
+            visit_occurrence.dropna(subset=['visit_start_date'], inplace=True)
+            drug_exposure.dropna(subset=['drug_exposure_start_date'], inplace=True)
+            condition_occurrence.dropna(subset=['condition_start_date'],inplace=True)
 
         except Exception as e:
             print("fn_preprocess_main error", e)
