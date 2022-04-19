@@ -24,7 +24,7 @@ class PreprocessHandler():
             1. p_str_table_name : [문자열] 조회할 테이블명
             2. p_str_col_name : [문자열] 조회할 컬럼명
         @return : 
-            3. rand_num : [정수] 중복확인한 1~8자리의 무작위 수
+            1. rand_num : [정수] 중복확인한 1~8자리의 무작위 수
     '''
     def fn_randomize_num(self, p_str_table_name, p_str_col_name):
         try:
@@ -48,44 +48,44 @@ class PreprocessHandler():
         person 테이블에 맞게 가공하는 함수
     
         @param : 
-            -
+            1. p_split_list : [리스트] 본문 데이터에서 개행 단위로 자른 문장 리스트
         @return : 
-            -
+            1. df_person : [데이터프레임] 무작위 생성 id를 제외하고 나머지가 입력된 데이터
     '''
-    def fn_preprocess_person(self, split_list):
+    def fn_preprocess_person(self, p_split_list):
         try:
             df_person = pd.DataFrame(
                 columns=["person_id", "year_of_birth", "month_of_birth", "day_of_birth", "death_date", "gender_value",
                          "race_value", "ethnicity_value"])
 
             # 인종
-            race_index = [i for i in range(len(split_list)) if "Race:" in split_list[i]]
-            race_value = split_list[race_index[0]].split("Race:")[1].replace(" ", "").lower()
+            race_index = [i for i in range(len(p_split_list)) if "Race:" in p_split_list[i]]
+            race_value = p_split_list[race_index[0]].split("Race:")[1].replace(" ", "").lower()
 
             # 민족성
-            ethnicity_index = [i for i in range(len(split_list)) if "Ethnicity:" in split_list[i]]
-            ethnicity_value = re.sub("[' '|\-]", "", split_list[ethnicity_index[0]].split("Ethnicity:")[1].lower())
+            ethnicity_index = [i for i in range(len(p_split_list)) if "Ethnicity:" in p_split_list[i]]
+            ethnicity_value = re.sub("[' '|\-]", "", p_split_list[ethnicity_index[0]].split("Ethnicity:")[1].lower())
 
             # 성별
-            gender_index = [i for i in range(len(split_list)) if "Gender:" in split_list[i]]
-            gender_value = split_list[gender_index[0]].split("Gender:")[1].replace(" ", "")
+            gender_index = [i for i in range(len(p_split_list)) if "Gender:" in p_split_list[i]]
+            gender_value = p_split_list[gender_index[0]].split("Gender:")[1].replace(" ", "")
 
             # # 나이
             # age_index = [i for i in range(len(split_list)) if "Age:" in split_list[i]]
             # age = split_list[age_index[0]].split("Age:")[1].replace(" ","")
 
             # 생년월일
-            birth_index = [i for i in range(len(split_list)) if "Birth Date:" in split_list[i]]
-            birth = split_list[birth_index[0]].split("Birth Date:")[1].replace(" ", "")
+            birth_index = [i for i in range(len(p_split_list)) if "Birth Date:" in p_split_list[i]]
+            birth = p_split_list[birth_index[0]].split("Birth Date:")[1].replace(" ", "")
             year_of_birth = int(birth.split("-")[0])
             month_of_birth = int(birth.split("-")[1])
             day_of_birth = int(birth.split("-")[2])
 
             # 사망날짜
-            death_index = [i for i in range(len(split_list)) if "Death Date:" in split_list[i]]
+            death_index = [i for i in range(len(p_split_list)) if "Death Date:" in p_split_list[i]]
             death_date = None
             if len(death_index) != 0:
-                death_date = split_list[death_index[0]].split("Death Date:")[1].replace(" ", "").lower()
+                death_date = p_split_list[death_index[0]].split("Death Date:")[1].replace(" ", "").lower()
 
             input_dict = {'year_of_birth': year_of_birth
                 , 'month_of_birth': month_of_birth
@@ -108,51 +108,51 @@ class PreprocessHandler():
         visit_occurrence 테이블에 맞게 가공하는 함수
     
         @param : 
-            -
+            1. p_split_list : [리스트] 본문 데이터에서 개행 단위로 자른 문장 리스트
         @return : 
-            -
+            1. df_visit_occurrence : [데이터프레임] 무작위 생성 id를 제외하고 나머지가 입력된 데이터
     '''
-    def fn_preprocess_visit_occurrence(self, split_list):
+    def fn_preprocess_visit_occurrence(self, p_split_list):
         try:
             visit_occurrence = pd.DataFrame(
                 columns=["visit_occurrence_id", "person_id", "visit_start_date", "care_site_nm", "visit_type_value"])
 
-            encounter_index = [i + 1 for i in range(len(split_list)) if "ENCOUNTER" in split_list[i]]
+            encounter_index = [i + 1 for i in range(len(p_split_list)) if "ENCOUNTER" in p_split_list[i]]
             # 내원한 일자
-            visit_start_date = split_list[encounter_index[0]].split(":")[0].replace(" ", "")
+            visit_start_date = p_split_list[encounter_index[0]].split(":")[0].replace(" ", "")
             # 내원한 기관명
-            care_site_nm = split_list[encounter_index[0]].split(":")[1].replace(" Encounter at ", "").strip()
+            care_site_nm = p_split_list[encounter_index[0]].split(":")[1].replace(" Encounter at ", "").strip()
 
-            visit_type_index = [i for i in range(len(split_list)) if "Type: " in split_list[i]]
+            visit_type_index = [i for i in range(len(p_split_list)) if "Type: " in p_split_list[i]]
             # 내원 종류에 대한 정보
-            visit_type_value = split_list[visit_type_index[0]].split("Type: ")[1].strip()
+            visit_type_value = p_split_list[visit_type_index[0]].split("Type: ")[1].strip()
 
             input_dict = {'visit_start_date': visit_start_date
                 , 'care_site_nm': care_site_nm
                 , 'visit_type_value': visit_type_value}
-            visit_occurrence = visit_occurrence.append(input_dict, ignore_index=True)
+            df_visit_occurrence = visit_occurrence.append(input_dict, ignore_index=True)
 
         except Exception as e:
             print(e)
 
-        return visit_occurrence
+        return df_visit_occurrence
 
     '''
         drug_exposure 테이블에 맞게 가공하는 함수
     
         @param : 
-            -
+            1. p_split_list : [리스트] 본문 데이터에서 개행 단위로 자른 문장 리스트
         @return : 
-            -
+            1. df_drug_exposure : [데이터프레임] 무작위 생성 id를 제외하고 나머지가 입력된 데이터
     '''
-    def fn_preprocess_drug_exposure(self, split_list):
+    def fn_preprocess_drug_exposure(self, p_split_list):
         try:
             drug_exposure = pd.DataFrame(
                 columns=["drug_exposure_id", "person_id", "drug_exposure_start_date", "drug_value", "route_value",
                          "dose_value", "unit_value", "visit_occurrence_id"])
             # drug_exposure
-            drug_index = [i + 1 for i in range(len(split_list)) if "MEDICATIONS:" in split_list[i]]
-            drug_history = split_list[drug_index[0]].split(":")
+            drug_index = [i + 1 for i in range(len(p_split_list)) if "MEDICATIONS:" in p_split_list[i]]
+            drug_history = p_split_list[drug_index[0]].split(":")
 
             for i in range(0, len(drug_history), 2):
                 # 약처방일자
@@ -169,25 +169,25 @@ class PreprocessHandler():
                 input_dict = {'drug_exposure_start_date': drug_exposure_start_date,
                               'drug_value': drug_value, 'dose_value': dose_value,
                               'unit_value': unit_value, 'route_value': route_value}
-                drug_exposure = drug_exposure.append(input_dict, ignore_index=True)
+                df_drug_exposure = drug_exposure.append(input_dict, ignore_index=True)
 
         except Exception as e:
             print(e)
 
-        return drug_exposure
+        return df_drug_exposure
 
     '''
         condition_occurrence 테이블에 맞게 가공하는 함수
     
         @param : 
-            -
+            1. p_split_list : [리스트] 본문 데이터에서 개행 단위로 자른 문장 리스트
         @return : 
-            -
+            1. df_condition_occurrence : [데이터프레임] 무작위 생성 id를 제외하고 나머지가 입력된 데이터
     '''
-    def fn_preprocess_condition_occurrence(self, split_list):
+    def fn_preprocess_condition_occurrence(self, p_split_list):
         try:
-            condition_index = [i + 1 for i in range(len(split_list)) if "CONDITIONS" in split_list[i]]
-            condition_history = split_list[condition_index[0]].split(":")
+            condition_index = [i + 1 for i in range(len(p_split_list)) if "CONDITIONS" in p_split_list[i]]
+            condition_history = p_split_list[condition_index[0]].split(":")
 
             condition_occurrence = pd.DataFrame(
                 columns=["condition_occurrence_id", "person_id", "condition_start_date", "condition_value",
@@ -201,12 +201,12 @@ class PreprocessHandler():
 
                 input_dict = {'condition_start_date': condition_start_date,
                               'condition_value': condition_value}
-                condition_occurrence = condition_occurrence.append(input_dict, ignore_index=True)
+                df_condition_occurrence = condition_occurrence.append(input_dict, ignore_index=True)
 
         except Exception as e:
             print(e)
 
-        return condition_occurrence
+        return df_condition_occurrence
 
     '''
         데이터 가공 메인 함수

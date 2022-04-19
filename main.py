@@ -1,16 +1,11 @@
-# This is a sample Python script.
+import warnings
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from Extractor import insert_data
 
+# append FutureWarning 및 SQLAlchemy UserWarning 콘솔뜨는 현상 제거
+warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action='ignore', category=UserWarning)
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
+# DB입력 메인 함수
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    insert_data.InsertDataHandler().fn_main_insert_data()
