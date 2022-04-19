@@ -4,6 +4,7 @@ import pandas as pd
 from pandas import DataFrame
 
 from DB import db_config, db_connection
+from Extractor import load_data
 
 '''
     프로그램 기능 : 불러온 데이터를 특정 테이블에 맞춰 가공
@@ -216,4 +217,64 @@ class PreprocessHandler():
             -
     '''
     def fn_preprocess_main(self):
-        return None
+        try:
+            # 데이터프레임 생성
+            person = pd.DataFrame(
+                columns=["person_id", "year_of_birth", "month_of_birth", "day_of_birth", "death_date", "gender_value",
+                         "race_value", "ethnicity_value"])
+            visit_occurrence = pd.DataFrame(
+                columns=["visit_occurrence_id", "person_id", "visit_start_date", "care_site_nm", "visit_type_value"])
+            drug_exposure = pd.DataFrame(
+                columns=["drug_exposure_id", "person_id", "drug_exposure_start_date", "drug_value", "route_value",
+                         "dose_value", "unit_value", "visit_occurrence_id"])
+            condition_occurrence = pd.DataFrame(
+                columns=["condition_occurrence_id", "person_id", "condition_start_date", "condition_value",
+                         "visit_occurrence_id"])
+
+            clinical_data = load_data.LoadDataHandler().fn_load_origin_data()
+
+            # 데이터 행별로 전처리
+            for i in range(len(clinical_data)):
+                split_list = load_data.LoadDataHandler().fn_preprocess_origin_data(clinical_data)
+                person_row = PreprocessHandler().fn_preprocess_person(split_list)
+                visit_occurrence_row = PreprocessHandler().fn_preprocess_visit_occurrence(split_list)
+                drug_exposure_row = PreprocessHandler().fn_preprocess_drug_exposure(split_list)
+                condition_occurrence_row = PreprocessHandler().fn_preprocess_condition_occurrence(split_list)
+
+                # person_id 입력
+                person_id = PreprocessHandler().fn_randomize_num(p_str_table_name='person',
+                                                                 p_str_col_name='person_id')
+                person_row['person_id'] = person_id
+                visit_occurrence_row['person_id'] = person_id
+                drug_exposure_row['person_id'] = person_id
+                condition_occurrence_row['person_id'] = person_id
+
+                # visit_occurrence_id 난수생성 및 조회, 입력
+                visit_occurrence_id = PreprocessHandler().fn_randomize_num(p_str_table_name='visit_occurrence',
+                                                                           p_str_col_name='visit_occurrence_id')
+                visit_occurrence_row['visit_occurrence_id'] = visit_occurrence_id
+                drug_exposure_row['visit_occurrence_id'] = visit_occurrence_id
+                condition_occurrence_row['visit_occurrence_id'] = visit_occurrence_id
+
+                # drug_exposure_id 난수생성 및 조회, 입력
+                drug_exposure_id = PreprocessHandler().fn_randomize_num(p_str_table_name='drug_exposure',
+                                                                        p_str_col_name='drug_exposure_id')
+                drug_exposure_row['drug_exposure_id'] = drug_exposure_id
+
+                # condition_occurrence_id 난수생성 및 조회, 입력
+                condition_occurrence_id = PreprocessHandler().fn_randomize_num(p_str_table_name='condition_occurrence',
+                                                                               p_str_col_name='condition_occurrence_id')
+                condition_occurrence_row['condition_occurrence_id'] = condition_occurrence_id
+
+                # 테이블 별 행 데이터 append
+                person = person.append(person_row, ignore_index=True)
+                visit_occurrence = visit_occurrence.append(visit_occurrence_row, ignore_index=True)
+                drug_exposure = drug_exposure.append(drug_exposure_row, ignore_index=True)
+                condition_occurrence = condition_occurrence.append(condition_occurrence_row, ignore_index=True)
+
+        except Exception as e:
+            print(e)
+
+        return person, visit_occurrence, drug_exposure, condition_occurrence
+
+
