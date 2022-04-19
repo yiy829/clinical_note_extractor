@@ -53,7 +53,7 @@ class InsertDataHandler():
                 # 없을경우 테이블 생성
                 if not answer:
                     db_connection.fn_create_table(p_str_create_table_query=db_config.QUERY_MATCHING[table])
-                print(table, " 생성 완료")
+                # print(table, " 생성 완료")
 
         except Exception as e:
             print(e)
