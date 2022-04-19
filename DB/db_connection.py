@@ -37,7 +37,7 @@ passwd = str(db_config.DB_PASSWORD)
     @return : 
         1. df_result : [데이터프레임] 조회한 결과문을 반환
 '''
-def fn_select_query(p_str_db_name='synthea_1000', p_str_sql_query=''):
+def fn_select_query(p_str_db_name=db_name, p_str_sql_query=''):
     conn = pg.connect(host=host, port=int(port), user=user, password=passwd,
                            database=p_str_db_name)
     conn.set_client_encoding('UTF8')
