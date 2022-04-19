@@ -235,7 +235,9 @@ class PreprocessHandler():
 
             # 데이터 행별로 전처리
             for i in range(len(clinical_data)):
-                split_list = load_data.LoadDataHandler().fn_preprocess_origin_data(clinical_data)
+                input_list = clinical_data['note'].loc[i].split("\n")
+
+                split_list = load_data.LoadDataHandler().fn_preprocess_origin_data(input_list)
                 person_row = PreprocessHandler().fn_preprocess_person(split_list)
                 visit_occurrence_row = PreprocessHandler().fn_preprocess_visit_occurrence(split_list)
                 drug_exposure_row = PreprocessHandler().fn_preprocess_drug_exposure(split_list)

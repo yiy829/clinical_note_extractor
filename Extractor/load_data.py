@@ -31,17 +31,15 @@ class LoadDataHandler():
         불러온 원본 데이터 한 row씩 전처리하는 기능
     
         @param : 
-            1. clinical_note_data : [문자열] clinical_note에서 한 행의 본문('note'컬럼) 데이터
+            1. p_input_list : [리스트] clinical_note에서 한 행의 본문('note'컬럼) 데이터
         @return : 
             1. split_list : [리스트] 불필요한 문자 제거 및 개행단위로 본문을 나눈 리스트
     '''
-    def fn_preprocess_origin_data(self, clinical_note_data):
+    def fn_preprocess_origin_data(self, p_split_list):
         try:
-            split_list = clinical_note_data['note'].loc[0].split("\n")
-
             # 'CONTINUING' 이후 제거
-            remove_index = [i for i in range(len(split_list)) if "CONTINUING" in split_list[i]]
-            split_list = split_list[0:remove_index[0]]
+            remove_index = [i for i in range(len(p_split_list)) if "CONTINUING" in p_split_list[i]]
+            split_list = p_split_list[0:remove_index[0]]
 
         except Exception as e:
             print(e)
